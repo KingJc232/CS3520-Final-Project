@@ -7,8 +7,15 @@ Developer: Jose Ceballos
 import pygame 
 import random 
 
+from enum import Enum
+
+from time import sleep
+
 #Initializing Pygame 
 pygame.init()
+
+#Initializing pygame font 
+pygame.font.init()
 
 """
 	Side Goals: 
@@ -49,6 +56,81 @@ class State:
 		pass
 
 	pass
+
+
+#Simple ButtonColor Class
+class ButtonColor:
+	def __init__(self, idleColor, hoverColor, pressedColor):
+		self.idleColor = idleColor
+		self.hoverColor = hoverColor
+		self.pressedColor = pressedColor
+
+#Simple Enum Class Used to Determine the State of the  Button 
+class ButtonState(Enum):
+	IDLE = 1 
+	HOVER = 2
+	PRESSED = 3
+
+#Simple Button Class 
+class Button(pygame.Surface):
+	
+	def __init__(self, message, buttonColors, position, sizeOfText = 30, dimensions = (200,100) ):
+
+		super().__init__(dimensions) #Setting the Dimensions of the Surface 
+		self.buttonColors = buttonColors #Saving the Different Colors of the Button 
+		self.position = position #Saving the position of the Button 
+		self.buttonState = ButtonState.IDLE #Initially The Button is IDLE 
+
+		self.font = pygame.font.Font("FreeSans.ttf",sizeOfText)
+
+		self.text = self.font.render(message,True, (0,0,0))
+
+		self.active = False #initally Falsed Only True When Pressed
+
+	#Update Method For the Button 
+	def update(self, mouseState):
+		
+		#Getting the Mouse Position 
+		mousePos = pygame.mouse.get_pos()
+
+		#Checking if the Mouse is Hovering over the Button 
+		if mousePos[0] >= self.position[0] and mousePos[0] <= (self.position[0] + self.get_width()):
+			if mousePos[1] >= self.position[1] and mousePos[1] <= (self.position[1] + self.get_height()):
+				#The Mouse Is Hovering over the button change its state 
+				self.buttonState = ButtonState.HOVER
+				#Checking if the Mouse is Pressing the Button 
+				if mouseState[0] == True: #If the user is left clicking on the button 
+					self.buttonState = ButtonState.PRESSED 
+					self.active = True #Since it Was Pressed We 
+		else:
+			self.buttonState = ButtonState.IDLE #The User is not pressing the Button 
+		
+		pass
+
+	def draw(self, screen):
+
+		#Filling the Correct Color Based on the Button State 
+		if self.buttonState == ButtonState.IDLE:
+			self.fill(self.buttonColors.idleColor) #Filling the button with the idle color 
+		elif self.buttonState == ButtonState.HOVER:
+			self.fill(self.buttonColors.hoverColor)
+		elif self.buttonState == ButtonState.PRESSED:
+			self.fill(self.buttonColors.pressedColor)
+
+		#Drawing the Outline of the button 
+		pygame.draw.rect(screen, (0,0,0), (self.position[0]-2,self.position[1]-2,self.get_width()+4,self.get_height()+4),0)
+
+		#Drawing the Button to the Screen 
+		screen.blit(self,self.position)
+
+		#Drawing the Text of the Button 
+		screen.blit(self.text,(self.position[0] + 20, self.position[1] + 25))
+
+		pass
+
+
+	pass
+
 
 #Class will be used to represent the 9 squares in the tic tac toe game 
 class Square(pygame.Surface):
@@ -100,10 +182,17 @@ class Square(pygame.Surface):
 	pass
 
 
+#Simple Enum Class that Helps determine the win state throughout the game 
+class WinState(Enum):
+	NONE = 0 
+	X = 1
+	O = 2
+	TIE = 3 
+
 #Player VS AI 
 class GameState(State):
 	#Default Constructor 
-	def __init__(self):
+	def __init__(self, screenD):
 		#Going to Represent the Board With a 2d Array 
 		# 0 represents ""
 		# 1 represents "X"
@@ -139,37 +228,37 @@ class GameState(State):
 	def update(self, mouseState):
 
 		#Check for winner 
-
-		#if its the player the turn 
-		if self.playersTurn:
-			for row in range(len(self.board)):
-				for col in range(len(self.board[0])):
-					#If the Square is Empty then see if the player wants to pick that square 
-					if self.board[row][col] == 0: 
-						self.visualBoard[row][col].update(mouseState) #Update it 
-					
-						#If the player picked the square then its now the AI's Turn 
-						if self.visualBoard[row][col].active == True:
-							#Link It with the board
-							self.board[row][col] = 1
-							#Changing Turns 
-							
-							self.playersTurn = False
+		winner = self._checkForWinner()# Checking for the winner before the player go 
+		#Do this while there is no winner 
+		print(winner)
+		if winner == WinState.NONE: 
+			#if its the player the turn 
+			if self.playersTurn:
+				for row in range(len(self.board)):
+					for col in range(len(self.board[0])):
+						#If the Square is Empty then see if the player wants to pick that square 
+						if self.board[row][col] == 0: 
+							self.visualBoard[row][col].update(mouseState) #Update it 
 						
-					
-		#Its the AIs Turn 
-		else: 
- 			#Call the _chooseBestMove For the AI To Select a Move 
- 			self._chooseBestMove() #Calling the AI To Pick a Move 
- 			self.playersTurn = True #Also Its Now the Players Turn 
- 			pass
+							#If the player picked the square then its now the AI's Turn 
+							if self.visualBoard[row][col].active == True:
+								#Link It with the board
+								self.board[row][col] = 1
+								#Changing Turns 
+								
+								self.playersTurn = False
+	
+		winner = self._checkForWinner()# Checking for the winner before the Ai goes
+		if winner == WinState.NONE: 
+			#Its The AI's Turn Now 
+			if self.playersTurn == False:	
+	 			#Call the _chooseBestMove For the AI To Select a Move 
+	 			self._chooseBestMove() #Calling the AI To Pick a Move 
+	 			self.playersTurn = True #Also Its Now the Players Turn 
+	 			pass
 		pass
 
-	#Choose the Best Move for the AI using the minimax algorithm 
-	def _chooseBestMove(self):
-
-		#Add Minimax algorithm here later 
-		#Simple AI that picks a random place in the board 
+	def _availablePositions(self):
 		available = [] #Initially Empty 
 		#First Find all available positions store them in a list and pick a random element in that list 
 		for row in range(len(self.board)):
@@ -177,6 +266,14 @@ class GameState(State):
 				#If its available 
 				if self.board[row][col] == 0: 
 					available.append(Vector2D(row,col)) #Vector2D is a custom object that has a x and y 
+		return available #Returning the Available List 
+		pass
+	#Choose the Best Move for the AI using the minimax algorithm 
+	def _chooseBestMove(self):
+
+		#Add Minimax algorithm here later 
+		#Simple AI that picks a random place in the board 
+		available = self._availablePositions()
 		#Choosing a Random Index from the available list 
 		if len(available) > 0:
 			randIndex = random.randint(0, len(available)-1)
@@ -191,6 +288,52 @@ class GameState(State):
 
 	#Function Checks the Board for a winner 
 	def _checkForWinner(self):
+		
+		#Remember:
+		# - No Winner Yet represented with a 0 
+		# - player "X" is represented with a 1 
+		# - player "O" is represented with a 2 
+		# - Tie Represented by a 3
+
+		winner = WinState.NONE #initially no one won 
+		
+		#Checking Horizontal 
+		for i in range(len(self.board)):
+			#If they are all the same elements 
+			if self._sameElements(self.board[i][0],self.board[i][1],self.board[i][2]):
+				if self.board[i][0] == 1:
+					winner = WinState.X
+				elif self.board[i][0] == 2:
+					winner = WinState.O
+		#Checking Vertically 
+		for i in range(len(self.board[0])):
+			if self._sameElements(self.board[0][i], self.board[1][i], self.board[2][i]):
+				if self.board[0][i] == 1:
+					winner = WinState.X
+				elif self.board[0][i] == 2:
+					winner = WinState.O
+
+		#Checking Diagonally 
+		if self._sameElements(self.board[0][0],self.board[1][1], self.board[2][2]):
+				if self.board[0][0] == 1:
+					winner = WinState.X
+				elif self.board[0][0] == 2:
+					winner = WinState.O
+
+		if self._sameElements(self.board[2][0],self.board[1][1],self.board[0][2]):
+				if self.board[2][0] == 1:
+					winner = WinState.X
+				elif self.board[2][0] == 2:
+					winner = WinState.O
+
+		if winner == WinState.NONE and len(self._availablePositions()) == 0:
+			return WinState.TIE #TIE 
+		else:
+			return winner #Either NONE, X, or O 
+
+	#Private Helper Method determines if the Elements passed are the same 
+	def _sameElements(self,first, second, third):
+		return first == second == third
 		pass
 
 	def draw(self, screen):
@@ -201,19 +344,59 @@ class GameState(State):
 				self.visualBoard[row][col].draw(screen,self.board[row][col])
 	pass
 
-
-
-#Controls all the States of the Game 
+#Controls all the States of the Game (Main Menu)
 class Game: 
 	def __init__(self, screenW = 600, screenH = 600):
 		self.screen = pygame.display.set_mode((screenW,screenH)) #Creating a Screen 
 		pygame.display.set_caption("Tic Tac Toe") #Changing the name of the Window 
-
+		self.screenD = (screenW, screenH)
 		self.states = [] #Creating a Empty Stack That will Store the states of the game 
 		#Pushing the Game State 
-		self.states.append(GameState()) #Right Now the GameState is On top of the Stack 
+		#self.states.append(MainMenuState((screenW,screenH))) #Pushing the Mainmenu State
 		
+		self._mainMenu()#Initializing the componenets of the Main Menu 
 		pass
+	
+	#Defines all the components needed for the main menu 
+	def _mainMenu(self):
+		self.background = pygame.image.load("background.png")
+		#self.LIGHTBLUE = (100,100,200)
+		#self.background.fill(self.LIGHTBLUE)
+		self.backgroundPosition = (0,0) #Want it to be on the corner 
+
+		idleColor = (50,100,200)#Light Blue 
+		hoverColor = (200,50,50)#Light Red
+		pressedColor = (255,0,0)#Dark Red When Pressed 
+
+		self.buttonColors = ButtonColor(idleColor, hoverColor, pressedColor)
+		
+		#self, message, buttonColors, position, sizeOfText = 40, dimensions = (200,100)
+		#Creating the player v.s AI Button That will switch them to GameState
+		self.playerAIButton = Button("Player v.s AI",self.buttonColors,(self.screenD[0]/2 - 100,self.screenD[1]/2 -100) )
+		pass
+
+	#Updates all the componenets of the Main Menu 
+	def _mainMenuUpdate(self, mouseState):
+		#Updating the playerAIButton 
+		self.playerAIButton.update(mouseState)
+
+		#Temp Fix Make it Better Once there is More Buttons/ Options 
+		if self.playerAIButton.active == True: 
+			#User Wants to go to player vs Ai Game State
+			#To Fast Once we click so add a sleep for .5 seconds  
+			sleep(.1)
+			self.states.append(GameState(self.screenD))
+
+		pass
+	#Draws all the componenets of the Main Menu
+	def _mainMenuDraw(self, screen):
+		#Drawing the background of the Main Menu 
+		screen.blit(self.background, self.backgroundPosition)
+		#Drawing the playerAIButton using its draw function 
+		self.playerAIButton.draw(screen)
+		pass
+
+
 
 	def start(self):
 		#Main Game Loop 
@@ -244,8 +427,10 @@ class Game:
 		if len(self.states) > 0:
 			#Peeking the Top State in the "Stack" 
 			self.states[len(self.states) - 1].update(mouseState) #Calling Update Method 
-			
-			pass
+		
+		else:
+			self._mainMenuUpdate(mouseState)#Calling the Main Menu Update Fuction 
+
 		pass
 
 	def draw(self):
@@ -253,7 +438,8 @@ class Game:
 		if len(self.states) > 0:
 			#Peeking the Top State in the "Stack"
 			self.states[len(self.states)-1].draw(self.screen)
-			pass
+		else:
+			self._mainMenuDraw(self.screen) #Calling the Main Menu Draw Function 
 		pass
 
 def main():
