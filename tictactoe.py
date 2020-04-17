@@ -19,13 +19,14 @@ pygame.font.init()
 
 """
     Side Goals: 
-        - 4/16/20 
             - Create the minimax AI 
             - Add More Button to the main menu (player vs simple AI) (simple AI vs MiniMax AI) (MiniMax AI vs MiniMax AI)
             - add options in the GameState to play with different AI's 
             - Link all the buttons in the main menu with the correct AI 
             - Also Stopped To Draw a Line For the Winner that Won 
+            - Add Alpha-Beta Pruning to improve computation speed (If you have time)
             - Clean up the code (Document it / make it more efficient)
+            - Implement a timer for the AI (Pause)
 
 
 """
@@ -75,6 +76,8 @@ class Button(pygame.Surface):
     #Update Method For the Button 
     def update(self, mouseState):
         
+        self.buttonState = ButtonState.IDLE #The User is not pressing the Button 
+
         #Getting the Mouse Position 
         mousePos = pygame.mouse.get_pos()
 
@@ -87,8 +90,6 @@ class Button(pygame.Surface):
                 if mouseState[0] == True: #If the user is left clicking on the button 
                     self.buttonState = ButtonState.PRESSED 
                     self.active = True #Since it Was Pressed We 
-        else:
-            self.buttonState = ButtonState.IDLE #The User is not pressing the Button 
         
         pass
 
@@ -182,6 +183,7 @@ class GameState():
         # 0 represents ""
         # 1 represents "X"
         # 2 represents "O"
+        # 4x4 
         self.board = [[0,0,0],
                       [0,0,0],
                       [0,0,0]]
@@ -346,6 +348,10 @@ class GameState():
             pass
     pass
 
+    #Drawas the Line Indicating the Winner 
+    def drawWinnerLine(self):
+        pass
+
 #Simple State that Shows the Winner and Adds two options (Play Again/ Main Menu)
 #Instead of a winner State Just draw a line in game state and just use this to display buttons 
 class WinnerState():
@@ -439,30 +445,40 @@ class Game:
         self.buttonColors = ButtonColor(idleColor, hoverColor, pressedColor)
         
         #self, message, buttonColors, position, sizeOfText = 40, dimensions = (200,100)
-        #Creating the player v.s AI Button That will switch them to GameState
-        self.playerAIButton = Button("Player v.s AI",self.buttonColors,(self.screenD[0]/2 - 100,self.screenD[1]/2 -100) )
+        #Creating the player v.s Minimax Button That will switch them to GameState
+        self.playerMiniMaxButton = Button("Player v.s MiniMax AI",self.buttonColors,(self.screenD[0]/2-150,self.screenD[1]/2 -100), 25, (300,100))
+
+        #Creating the player v.s Simple AI button 
+        self.playerSimpleAIButton = Button("Player v.s Simple AI",self.buttonColors,(self.screenD[0]/2-150,self.screenD[1]/2), 25, (300,100))
         pass
 
     #Updates all the componenets of the Main Menu  
     def _mainMenuUpdate(self, mouseState):
-        #Updating the playerAIButton 
-        self.playerAIButton.update(mouseState)
+        #Updating the playerMiniMaxButton 
+        self.playerMiniMaxButton.update(mouseState)
+
+        #Updating the playerSimpleAIButton 
+        self.playerSimpleAIButton.update(mouseState)
 
         #Temp Fix Make it Better Once there is More Buttons/ Options 
-        if self.playerAIButton.active == True: 
+        if self.playerMiniMaxButton.active == True: 
             #User Wants to go to player vs Ai Game State
             #To Fast Once we click so add a sleep for .5 seconds  
             sleep(.1)
             self.states.append(GameState(self.screenD))
-            #Resetting the playerAIButton 
-            self.playerAIButton.active = False 
+            #Resetting the playerMiniMaxButton 
+            self.playerMiniMaxButton.active = False 
         pass
     #Draws all the componenets of the Main Menu
     def _mainMenuDraw(self, screen):
         #Drawing the background of the Main Menu 
         screen.blit(self.background, self.backgroundPosition)
-        #Drawing the playerAIButton using its draw function 
-        self.playerAIButton.draw(screen)
+        #Drawing the playerMiniMaxButton using its draw function 
+        self.playerMiniMaxButton.draw(screen)
+
+        #Drawing the playerSimpleAIButton using its draw function 
+        self.playerSimpleAIButton.draw(screen)
+
         pass
 
 
