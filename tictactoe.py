@@ -19,6 +19,7 @@ pygame.font.init()
 
 """
     Side Goals: 
+            - Create a Enum class for the gameModes Instead of using strings (cosmetics)
             - Create the minimax AI 
             - Add More Button to the main menu (player vs simple AI) (simple AI vs MiniMax AI) (MiniMax AI vs MiniMax AI)
             - add options in the GameState to play with different AI's 
@@ -27,6 +28,7 @@ pygame.font.init()
             - Add Alpha-Beta Pruning to improve computation speed (If you have time)
             - Clean up the code (Document it / make it more efficient)
             - Implement a timer for the AI (Pause)
+            - Create Different Colors for the Main Menu Buttons ??? 
 
 
 """
@@ -178,7 +180,7 @@ class WinState(Enum):
 #Player VS AI 
 class GameState():
     #Default Constructor 
-    def __init__(self, screenD):
+    def __init__(self, screenD, gameMode):
         #Going to Represent the Board With a 2d Array 
         # 0 represents ""
         # 1 represents "X"
@@ -201,6 +203,9 @@ class GameState():
 
         self.isStateActive = True #Initially the State is Active 
         #Determines
+
+        #Determines what GameMode to Play 
+        self.gameMode = gameMode
 
         pass
 
@@ -402,6 +407,7 @@ class WinnerState():
 
         #Button Was Pressed
         if self.playAgainButton.active == True: 
+            sleep(.1) #Need this quick pause so that the user can select from the menu again 
             #Turn the State off 
             self.isStateActive = False 
             pass
@@ -417,60 +423,78 @@ class WinnerState():
         pass
 
 
-
-#Controls all the States of the Game (Main Menu)
-class Game: 
-    def __init__(self, screenW = 600, screenH = 600):
-        self.screen = pygame.display.set_mode((screenW,screenH)) #Creating a Screen 
-        pygame.display.set_caption("Tic Tac Toe") #Changing the name of the Window 
-        self.screenD = (screenW, screenH)
-        self.states = [] #Creating a Empty Stack That will Store the states of the game 
-        #Pushing the Game State 
-        #self.states.append(MainMenuState((screenW,screenH))) #Pushing the Mainmenu State
-        
-        self._mainMenu()#Initializing the componenets of the Main Menu 
-        pass
-    
-    #Defines all the components needed for the main menu 
-    def _mainMenu(self):
+#Creating a Main Menu State 
+class MainMenuState:
+    def __init__(self, screenD):
+        self.screenD = screenD
         self.background = pygame.image.load("background.png")
-        #self.LIGHTBLUE = (100,100,200)
-        #self.background.fill(self.LIGHTBLUE)
         self.backgroundPosition = (0,0) #Want it to be on the corner 
+
+        self.isStateActive = True #initially The State is Active 
+
+        self.gameMode = "None" #Controls what GameMode to Play 
 
         idleColor = (50,100,200)#Light Blue 
         hoverColor = (200,50,50)#Light Red
         pressedColor = (255,0,0)#Dark Red When Pressed 
 
         self.buttonColors = ButtonColor(idleColor, hoverColor, pressedColor)
-        
         #self, message, buttonColors, position, sizeOfText = 40, dimensions = (200,100)
         #Creating the player v.s Minimax Button That will switch them to GameState
-        self.playerMiniMaxButton = Button("Player v.s MiniMax AI",self.buttonColors,(self.screenD[0]/2-150,self.screenD[1]/2 -100), 25, (300,100))
+        self.playerMiniMaxButton = Button("Player v.s MiniMax AI",self.buttonColors,(self.screenD[0]/2-150,self.screenD[1]/2 -75), 25, (325,75))
 
         #Creating the player v.s Simple AI button 
-        self.playerSimpleAIButton = Button("Player v.s Simple AI",self.buttonColors,(self.screenD[0]/2-150,self.screenD[1]/2), 25, (300,100))
+        self.playerSimpleAIButton = Button("Player v.s Simple AI",self.buttonColors,(self.screenD[0]/2-150,self.screenD[1]/2), 25, (325,75))
+        
+        #Creating the SimpleAI v.s MiniMax Button 
+        self.simpleAIMiniMaxButton = Button("SimpleAI v.s MiniMax AI",self.buttonColors,(self.screenD[0]/2-150,self.screenD[1]/2 +75), 25, (325,75))
+
+        #Creating the MiniMaxAI v.s MiniMax AI Button 
+        self.miniMaxButton = Button("MiniMax AI v.s MiniMax AI", self.buttonColors,(self.screenD[0]/2-150,self.screenD[1]/2 +150), 25, (325,75))
+
         pass
 
-    #Updates all the componenets of the Main Menu  
-    def _mainMenuUpdate(self, mouseState):
+    def update(self, mouseState):
+
         #Updating the playerMiniMaxButton 
         self.playerMiniMaxButton.update(mouseState)
 
         #Updating the playerSimpleAIButton 
         self.playerSimpleAIButton.update(mouseState)
 
-        #Temp Fix Make it Better Once there is More Buttons/ Options 
-        if self.playerMiniMaxButton.active == True: 
-            #User Wants to go to player vs Ai Game State
-            #To Fast Once we click so add a sleep for .5 seconds  
+        #Updating the simpleAIMiniMaxButton
+        self.simpleAIMiniMaxButton.update(mouseState)
+
+        #Updating the miniMaxButton
+        self.miniMaxButton.update(mouseState)
+
+        #If the user presses this button 
+        if self.playerMiniMaxButton.active == True:
             sleep(.1)
-            self.states.append(GameState(self.screenD))
-            #Resetting the playerMiniMaxButton 
-            self.playerMiniMaxButton.active = False 
+            self.isStateActive = False #Turn off the Main Menu State 
+            self.gameMode = "playerMiniMax" #Go to the player MiniMax Game State
+
+        #If the User pressed the playerSimpleAIButton
+        if self.playerSimpleAIButton.active == True:
+            sleep(.1)
+            self.isStateActive = False #Turnning off the Main Menu State
+            self.gameMode = "playerSimpleAI" #Go TO the player Simple AI Game State 
+
+        #If the User presses the simpleAIMiniMaxButton
+        if self.simpleAIMiniMaxButton.active == True:
+            sleep(.1)
+            self.isStateActive = False #Turnning off the Main Menu State
+            self.gameMode = "simpleAIMiniMax"
+
+        #If the User presses the miniMaxButton 
+        if self.miniMaxButton.active == True:
+            sleep(.1)
+            self.isStateActive = False #Turnning off the Main Menu State
+            self.gameMode = "miniMax"
+
         pass
-    #Draws all the componenets of the Main Menu
-    def _mainMenuDraw(self, screen):
+
+    def draw(self, screen):
         #Drawing the background of the Main Menu 
         screen.blit(self.background, self.backgroundPosition)
         #Drawing the playerMiniMaxButton using its draw function 
@@ -479,9 +503,21 @@ class Game:
         #Drawing the playerSimpleAIButton using its draw function 
         self.playerSimpleAIButton.draw(screen)
 
+        #Drawing the simpleAIMiniMaxButton using its draw function 
+        self.simpleAIMiniMaxButton.draw(screen)
+
+        #Drawing the miniMaxButton using its draw function 
+        self.miniMaxButton.draw(screen)
         pass
 
 
+#Controls all the States of the Game (Main Menu)
+class Game: 
+    def __init__(self, screenW = 600, screenH = 600):
+        self.screen = pygame.display.set_mode((screenW,screenH)) #Creating a Screen 
+        pygame.display.set_caption("Tic Tac Toe") #Changing the name of the Window 
+        self.screenD = (screenW, screenH)
+        self.states = [] #Creating a Empty Stack That will Store the states of the game 
 
     def start(self):
         #Main Game Loop 
@@ -528,10 +564,23 @@ class Game:
                 elif isinstance(self.states[len(self.states)-1], WinnerState):
                     self.states.pop()
                     pass
+
+                #If Its an instance of MainMenu
+                elif isinstance(self.states[len(self.states)-1], MainMenuState):
+                    gameMode = self.states[len(self.states)-1].gameMode #Getting the GameMode from the MainMenu 
+
+                    #Popping off the MainMenuState
+                    self.states.pop()
+
+                    #Adding the Correct GameMode
+                    self.states.append(GameState(self.screenD, gameMode))
+                    pass
                 
                 pass
+
+        #If empty then Push MainMenu State
         else:
-            self._mainMenuUpdate(mouseState)#Calling the Main Menu Update Fuction 
+            self.states.append(MainMenuState(self.screenD)) #Pushing the Mainmenu State
 
         pass
 
@@ -540,8 +589,6 @@ class Game:
         if len(self.states) > 0:
             #Peeking the Top State in the "Stack"
             self.states[len(self.states)-1].draw(self.screen)
-        else:
-            self._mainMenuDraw(self.screen) #Calling the Main Menu Draw Function 
         pass
 
 def main():
