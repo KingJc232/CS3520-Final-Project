@@ -18,15 +18,16 @@ pygame.init()
 pygame.font.init()
 
 """
-    Side Goals: 
-            - Create a Enum class for the gameModes Instead of using strings (cosmetics)
+    Goals: 
             - Create the minimax AI 
             - Add More Button to the main menu (player vs simple AI) (simple AI vs MiniMax AI) (MiniMax AI vs MiniMax AI)
             - add options in the GameState to play with different AI's 
             - Link all the buttons in the main menu with the correct AI 
             - Also Stopped To Draw a Line For the Winner that Won 
             - Add Alpha-Beta Pruning to improve computation speed (If you have time)
+            - Create a Enum class for the gameModes Instead of using strings (cosmetics)
             - Clean up the code (Document it / make it more efficient)
+            - Clean up the project add better designs/ animations 
             - Implement a timer for the AI (Pause)
             - Create Different Colors for the Main Menu Buttons ??? 
 
@@ -441,16 +442,16 @@ class MainMenuState:
         self.buttonColors = ButtonColor(idleColor, hoverColor, pressedColor)
         #self, message, buttonColors, position, sizeOfText = 40, dimensions = (200,100)
         #Creating the player v.s Minimax Button That will switch them to GameState
-        self.playerMiniMaxButton = Button("Player v.s MiniMax AI",self.buttonColors,(self.screenD[0]/2-150,self.screenD[1]/2 -75), 25, (325,75))
+        self.playerMiniMaxButton = Button("Player v.s MiniMax AI",self.buttonColors,(self.screenD[0]/2-165,self.screenD[1]/2 -75), 25, (325,75))
 
         #Creating the player v.s Simple AI button 
-        self.playerSimpleAIButton = Button("Player v.s Simple AI",self.buttonColors,(self.screenD[0]/2-150,self.screenD[1]/2), 25, (325,75))
+        self.playerSimpleAIButton = Button("Player v.s Simple AI",self.buttonColors,(self.screenD[0]/2-165,self.screenD[1]/2), 25, (325,75))
         
         #Creating the SimpleAI v.s MiniMax Button 
-        self.simpleAIMiniMaxButton = Button("SimpleAI v.s MiniMax AI",self.buttonColors,(self.screenD[0]/2-150,self.screenD[1]/2 +75), 25, (325,75))
+        self.simpleAIMiniMaxButton = Button("SimpleAI v.s MiniMax AI",self.buttonColors,(self.screenD[0]/2-165,self.screenD[1]/2 +75), 25, (325,75))
 
         #Creating the MiniMaxAI v.s MiniMax AI Button 
-        self.miniMaxButton = Button("MiniMax AI v.s MiniMax AI", self.buttonColors,(self.screenD[0]/2-150,self.screenD[1]/2 +150), 25, (325,75))
+        self.miniMaxButton = Button("MiniMax AI v.s MiniMax AI", self.buttonColors,(self.screenD[0]/2-165,self.screenD[1]/2 +150), 25, (325,75))
 
         pass
 
