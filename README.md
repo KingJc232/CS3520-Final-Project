@@ -14,6 +14,7 @@ To Create Tic Tac Toe Game and a Symbolic AI using the Min Max Algorithm with Al
   - https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-1-introduction/
   - https://www.pygame.org/ftp/contrib/pygame_docs.pdf
   - https://www.youtube.com/watch?v=BHh654_7Cmw
+  - https://www.youtube.com/watch?v=trKjYdBASyQ
 ### Credit:
   - Good And Evil Is Evil by septahelix (c) copyright 2020 Licensed under a Creative Commons Noncommercial Sampling Plus license. http://dig.ccmixter.org/files/septahelix/61280 
   - Title: Anvil Impact 1x
