@@ -17,6 +17,13 @@ pygame.init()
 # Initializing pygame font
 pygame.font.init()
 
+# Sound effect when selecting option
+selectSound = pygame.mixer.Sound('stephan_schutze-anvil_impact_1x-894647867.wav')
+selectSound.set_volume(0.03)
+# Sound effect when selecting position
+insertSound = pygame.mixer.Sound('silencer.wav')
+insertSound.set_volume(0.01)
+
 """
     Goals: 
             - Create the minimax AI 
@@ -97,6 +104,7 @@ class Button(pygame.Surface):
                 # Checking if the Mouse is Pressing the Button
                 if mouseState[0] == True:  # If the user is left clicking on the button
                     self.buttonState = ButtonState.PRESSED
+                    selectSound.play()
                     self.active = True  # Since it Was Pressed We
 
         pass
@@ -159,6 +167,7 @@ class Square(pygame.Surface):
                     # Checking if the Mouse is pressed
                     if mouseState[0]:  # If this doesnt work try [0]
                         self.active = True  # The square got pressed therefore its active
+                        insertSound.play()
         pass
 
     # Draws the Square onto the Screen
@@ -543,7 +552,6 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     isOver = True
-
             mouseState = pygame.mouse.get_pressed()  # Getting the State of all the buttons on the mouse
             keyspressed = pygame.key.get_pressed()
 
