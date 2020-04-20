@@ -1,7 +1,7 @@
 """
 File: tictactoe.py
-Goal: To Create Tic Tac Toe 
-Developer: Jose Ceballos 
+Goal: To Create Tic Tac Toe and implement the Minimax Algorithm with Alpha-Beta Pruning 
+Developers: Jose Ceballos, Daniel Santana
 """
 
 import pygame
@@ -29,11 +29,10 @@ insertSound.set_volume(0.01)
             - Link all the buttons in the main menu with the correct AI
             - Implement a timer for the AI (Pause) 
             - Also Stopped To Draw a Line For the Winner that Won 
-            - Add Alpha-Beta Pruning to improve computation speed (If you have time)
-            - Create a Enum class for the gameModes Instead of using strings (cosmetics)
             - Clean up the code (Document it / make it more efficient)
             - Clean up the project add better designs/ animations 
-            - Create Different Colors for the Main Menu Buttons ??? 
+            - Make it so that you can see who won after the game is over 
+            - Make it so that it draws a line on the winner 
 
 
 """
@@ -238,8 +237,70 @@ class GameState():
     def update(self, mouseState):
 
         # Check for winner
-        self.winner = self._checkForWinner()  # Checking for the winner before the player go
+        self.winner = self._checkForWinner()  # Checking for the winner 
 
+        #If the User Wants to Play vs the MiniMax Algorithm or player vs SimpleAI 
+        if self.gameMode == "playerMiniMax" or self.gameMode == "playerSimpleAI":
+            self._player(mouseState) #Allowing the player to pick a position 
+            self.winner = self._checkForWinner()  # Checking for the winner before the Ai goes
+            if self.winner == WinState.NONE:
+                if self.playersTurn == False:
+                    if self.gameMode == "playerMiniMax":
+                        self._chooseBestMove(False)#Calling the MiniMax AI 
+                    elif self.gameMode == "playerSimpleAI":
+                        self._simpleAI(False)#Calling the Simple AI 
+                    self.playersTurn = True #Now its the players Turn 
+
+        #If the User Wants to simulate the SimpleAI vs the MiniMax Algorithm 
+        if self.gameMode == "simpleAIMiniMax":
+            self._simpleAIMiniMax()
+
+        if self.gameMode == "miniMax":
+            self._miniMaxMiniMax()
+
+        # If someone won then turn off the State
+        if self.winner != WinState.NONE:
+            self.isStateActive = False  # State is being turned off
+
+
+
+    def _simpleAIMiniMax(self):
+        if self.winner == WinState.NONE:
+            #SimpleAI Turn 
+            if self.playersTurn:
+                self._simpleAI(True) #Calling the Simple AI 
+                self.playersTurn = False
+                sleep(.5)
+
+            else:
+                self.winner = self._checkForWinner() #Checking for the winner before the miniAI Goes
+                if self.winner == WinState.NONE:
+                    if self.playersTurn == False:
+                        self._chooseBestMove(False) #Calling the MiniMax Algorithm
+                        self.playersTurn = True 
+                        sleep(.5)
+        pass
+
+    def _miniMaxMiniMax(self):
+
+        if self.winner == WinState.NONE:
+            #MiniMax AI Turn 
+            if self.playersTurn:
+                self._chooseBestMove(True) #Calling the MiniMax 
+                self.playersTurn = False
+                sleep(.5)
+
+            else:
+                self.winner = self._checkForWinner() #Checking for the winner before the miniAI Goes
+                if self.winner == WinState.NONE:
+                    if self.playersTurn == False:
+                        self._chooseBestMove(False) #Calling the MiniMax Algorithm
+                        self.playersTurn = True 
+                        sleep(.5)
+        pass
+
+    #Allows the Player to pick a position on the board 
+    def _player(self, mouseState):
         # This Code Allows the player to pick a position on the board
         # Do this while there is no winner
         if self.winner == WinState.NONE:
@@ -258,19 +319,7 @@ class GameState():
                                 # Changing Turns
 
                                 self.playersTurn = False
-
-        self.winner = self._checkForWinner()  # Checking for the winner before the Ai goes
-        if self.winner == WinState.NONE:
-            # Its The AI's Turn Now
-            if self.playersTurn == False:
-                self._chooseBestMove(False)  # Calling the AI To Pick a Move
-                #self._simpleAI()
-                self.playersTurn = True  # Also Its Now the Players Turn
-                pass
-
-        # If someone won then turn off the State
-        if self.winner != WinState.NONE:
-            self.isStateActive = False  # State is being turned off
+        pass
 
     def _availablePositions(self):
         available = []  # Initially Empty
@@ -387,7 +436,8 @@ class GameState():
         pass
 
     #Simple AI Code Randomly Picks a position 
-    def _simpleAI(self):
+    #isXTurn determines if _simpleAI Should Place an X or an O
+    def _simpleAI(self, isXTurn):
 
         # Add Minimax algorithm here later
         # Simple AI that picks a random place in the board
@@ -400,8 +450,12 @@ class GameState():
             col = available[randIndex].y
             # Update both boards
             self.visualBoard[row][col].active = True  # Marking it as taken
-            self.board[row][col] = 2  # Placing a "O" in the board
-        pass
+            if isXTurn == True:
+                self.board[row][col] = 1 #Placing a "X"
+            else:
+                self.board[row][col] = 2  # Placing a "O" in the board
+
+
 
     # Function Checks the Board for a winner
     def _checkForWinner(self):
@@ -465,11 +519,6 @@ class GameState():
             pass
 
     pass
-
-    # Drawas the Line Indicating the Winner
-    def drawWinnerLine(self):
-        pass
-
 
 # Simple State that Shows the Winner and Adds two options (Play Again/ Main Menu)
 # Instead of a winner State Just draw a line in game state and just use this to display buttons
@@ -552,6 +601,7 @@ class MainMenuState:
         pressedColor = (255, 0, 0)  # Dark Red When Pressed
 
         self.buttonColors = ButtonColor(idleColor, hoverColor, pressedColor)
+        
         # self, message, buttonColors, position, sizeOfText = 40, dimensions = (200,100)
         # Creating the player v.s Minimax Button That will switch them to GameState
         self.playerMiniMaxButton = Button("Player v.s MiniMax AI", self.buttonColors,
@@ -600,7 +650,7 @@ class MainMenuState:
             self.gameMode = "playerSimpleAI"  # Go TO the player Simple AI Game State
 
 
-        """ (TURN OFF THESE BUTTONS Temp)
+
         
         # If the User presses the simpleAIMiniMaxButton
         if self.simpleAIMiniMaxButton.active == True:
@@ -614,7 +664,7 @@ class MainMenuState:
             self.isStateActive = False  # Turnning off the Main Menu State
             self.gameMode = "miniMax"
         
-        """
+    
         
         pass
 
