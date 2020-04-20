@@ -25,3 +25,5 @@ To Create Tic Tac Toe Game and a Symbolic AI using the Min Max Algorithm with Al
     Uploaded: 08.30.09
     License: Attribution 3.0
     Recorded by Mike Koenig
+### **ScreenShot**
+![Tic_Tac_Toe](https://user-images.githubusercontent.com/52595651/79795976-a1293c80-8309-11ea-9b8f-da839804dad3.png)
