@@ -25,17 +25,14 @@ insertSound = pygame.mixer.Sound('silencer.wav')
 insertSound.set_volume(0.01)
 
 """
-    Goals: 
-            - Create the minimax AI 
-            - Add More Button to the main menu (player vs simple AI) (simple AI vs MiniMax AI) (MiniMax AI vs MiniMax AI)
-            - add options in the GameState to play with different AI's 
-            - Link all the buttons in the main menu with the correct AI 
+    Goals:  
+            - Link all the buttons in the main menu with the correct AI
+            - Implement a timer for the AI (Pause) 
             - Also Stopped To Draw a Line For the Winner that Won 
             - Add Alpha-Beta Pruning to improve computation speed (If you have time)
             - Create a Enum class for the gameModes Instead of using strings (cosmetics)
             - Clean up the code (Document it / make it more efficient)
             - Clean up the project add better designs/ animations 
-            - Implement a timer for the AI (Pause)
             - Create Different Colors for the Main Menu Buttons ??? 
 
 
@@ -202,7 +199,6 @@ class GameState():
         # 0 represents ""
         # 1 represents "X"
         # 2 represents "O"
-        # 4x4 
         self.board = [[0, 0, 0],
                       [0, 0, 0],
                       [0, 0, 0]]
@@ -219,7 +215,6 @@ class GameState():
         self.winner = None
 
         self.isStateActive = True  # Initially the State is Active
-        # Determines
 
         # Determines what GameMode to Play
         self.gameMode = gameMode
@@ -268,8 +263,8 @@ class GameState():
         if self.winner == WinState.NONE:
             # Its The AI's Turn Now
             if self.playersTurn == False:
-                # Call the _chooseBestMove For the AI To Select a Move
-                self._chooseBestMove()  # Calling the AI To Pick a Move
+                self._chooseBestMove(False)  # Calling the AI To Pick a Move
+                #self._simpleAI()
                 self.playersTurn = True  # Also Its Now the Players Turn
                 pass
 
@@ -288,8 +283,111 @@ class GameState():
         return available  # Returning the Available List
         pass
 
-    # Choose the Best Move for the AI using the minimax algorithm
-    def _chooseBestMove(self):
+
+
+
+    #Calls the miniMax Algorithm on all the avaliable positions and picks the best move based on its score 
+    #Parameter isMaximizing determines if its "X" Turn (max) Or "O" Turn (min)
+    def _chooseBestMove(self, isMaximizing):
+
+        available = self._availablePositions() #Getting all the avaliable positions 
+        #Determining first if we are dealing with "max" or "min"
+        if isMaximizing == True:
+            bestScore = -99999999 #Initially -Infinity 
+        else:
+            bestScore = 99999999 #Initially +Infinity 
+
+        #Holds the position of the best move
+        bestMove = None #Not Initialized 
+
+        #For every available position in the board
+        for pos in available:
+
+            if isMaximizing: #If we are dealing with the "X"
+                #Checking if at this position this is the best move 
+                self.board[pos.x][pos.y] = 1 # 1 since "x" is represented by a 1 
+
+                tempScore = self._miniMax(False, -99999999, 99999999) #Calling the miniMax Function 
+                if tempScore > bestScore:
+                    bestScore = tempScore
+                    bestMove = pos #Saving the Best position 
+                
+
+            else: #Dealing with "O"
+                self.board[pos.x][pos.y] = 2 # since 2 represents "o"
+                tempScore = self._miniMax(True, -99999999, 99999999) #Calling the miniMax Function 
+                
+                if tempScore < bestScore:
+                    bestScore = tempScore
+                    bestMove = pos
+                
+            self.board[pos.x][pos.y] = 0 #undoing the board change 
+        
+        if len(available) > 0: 
+            if isMaximizing:
+                self.board[bestMove.x][bestMove.y] = 1  #Because "X" Represented with 1
+            else:
+                self.board[bestMove.x][bestMove.y] = 2  #Because "O" Represented with 2
+
+
+
+
+
+    #Uses the mini Max Algorithm To pick the best move 
+    #isMaximizing determines if we are talking about "x" (max) or "o" (min)
+    #alpha keeps track of the best score "X" Can achieve 
+    #beta keeps track of the best score "O" can achieve 
+    def _miniMax(self,isMaximizing, alpha, beta):
+
+        #First checking if someone Won 
+        result = self._checkForWinner()
+
+        #Defining a look up table for the scores (Creating a Dictionary)
+        scores = {WinState.X:1, WinState.O:-1, WinState.TIE:0}
+
+        #if someone won or its a tie (BASE CASE)
+        if result != WinState.NONE:
+            score = scores[result]
+            return score #Returns the score 
+
+
+        available = self._availablePositions() #Getting all the avaliable positions 
+
+        #Determining first if we are dealing with "max" or "min"
+        if isMaximizing == True:
+            bestScore = -99999999 #Initially -Infinity 
+        else:
+            bestScore = 99999999 #Initially +Infinity 
+
+        #For every available position in the board
+        for pos in available:
+            if isMaximizing: #If we are dealing with the "X"
+                #Checking if at this position this is the best move 
+                self.board[pos.x][pos.y] = 1 # 1 since "x" is represented by a 1 
+                tempScore = self._miniMax(False, alpha, beta) #Calling the miniMax Function 
+                self.board[pos.x][pos.y] = 0 #undoing the board change 
+                bestScore = max(bestScore,tempScore)
+                alpha = max(alpha,tempScore)
+ 
+
+
+            else: #Dealing with "O"
+                self.board[pos.x][pos.y] = 2 # since 2 represents "o"
+                tempScore = self._miniMax(True, alpha, beta) #Calling the miniMax Function   
+                bestScore = min(bestScore,tempScore)
+                beta = min(beta,tempScore)
+
+            self.board[pos.x][pos.y] = 0 #undoing the board change 
+            if beta <= alpha:
+                break #Alpha-Beta Pruning 
+
+
+        return bestScore #Returning the Best Score 
+
+        pass
+
+    #Simple AI Code Randomly Picks a position 
+    def _simpleAI(self):
 
         # Add Minimax algorithm here later
         # Simple AI that picks a random place in the board
@@ -482,9 +580,11 @@ class MainMenuState:
         self.playerSimpleAIButton.update(mouseState)
 
         # Updating the simpleAIMiniMaxButton
+        
         self.simpleAIMiniMaxButton.update(mouseState)
 
         # Updating the miniMaxButton
+        
         self.miniMaxButton.update(mouseState)
 
         # If the user presses this button
@@ -499,6 +599,9 @@ class MainMenuState:
             self.isStateActive = False  # Turnning off the Main Menu State
             self.gameMode = "playerSimpleAI"  # Go TO the player Simple AI Game State
 
+
+        """ (TURN OFF THESE BUTTONS Temp)
+        
         # If the User presses the simpleAIMiniMaxButton
         if self.simpleAIMiniMaxButton.active == True:
             sleep(.1)
@@ -510,7 +613,9 @@ class MainMenuState:
             sleep(.1)
             self.isStateActive = False  # Turnning off the Main Menu State
             self.gameMode = "miniMax"
-
+        
+        """
+        
         pass
 
     def draw(self, screen):
