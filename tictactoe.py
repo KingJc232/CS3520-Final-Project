@@ -26,8 +26,6 @@ insertSound.set_volume(0.01)
 
 """
     Goals:  
-            - Link all the buttons in the main menu with the correct AI
-            - Implement a timer for the AI (Pause) 
             - Also Stopped To Draw a Line For the Winner that Won 
             - Clean up the code (Document it / make it more efficient)
             - Clean up the project add better designs/ animations 
@@ -144,11 +142,17 @@ class Square(pygame.Surface):
         self.oImage = pygame.image.load("o.png")
         self.emptyImage = pygame.image.load("empty.png")
 
+        self.hoverImage = pygame.image.load("hover.png")
+
+        self.squareState = ButtonState.IDLE #Initally IDLE 
+
         self.active = False  # Initially the Square is not active because its not pressed
 
     # Updates the Square
     def update(self, mouseState):
 
+        self.squareState = ButtonState.IDLE #Initally IDLE 
+        
         # MouseState is a list of booleans of all the mouse buttons states
         # mousePos is a tuple
         mousePos = pygame.mouse.get_pos()  # Getting the Mouse position
@@ -160,17 +164,23 @@ class Square(pygame.Surface):
             if mousePos[0] >= self.position[0] and mousePos[0] <= (self.position[0] + self.get_width()):
                 if mousePos[1] >= self.position[1] and mousePos[1] <= (self.position[1] + self.get_height()):
                     # Mouse is Hovering over the square
+                    self.squareState = ButtonState.HOVER
                     # Checking if the Mouse is pressed
                     if mouseState[0]:  # If this doesnt work try [0]
+                        self.squareState = ButtonState.PRESSED
                         self.active = True  # The square got pressed therefore its active
                         insertSound.play()
+        
         pass
 
     # Draws the Square onto the Screen
     def draw(self, screen, num):
 
         if num == 0:
-            screen.blit(self.emptyImage, self.position)
+            if self.squareState == ButtonState.IDLE:
+                screen.blit(self.emptyImage, self.position)
+            elif self.squareState == ButtonState.HOVER:
+                screen.blit(self.hoverImage,self.position)
         elif num == 1:
             screen.blit(self.xImage, self.position)
         elif num == 2:
