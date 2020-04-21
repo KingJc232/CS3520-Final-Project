@@ -25,17 +25,6 @@ insertSound = pygame.mixer.Sound('silencer.wav')
 insertSound.set_volume(0.01)
 
 """
-    Goals:  
-            - Also Stopped To Draw a Line For the Winner that Won 
-            - Clean up the code (Document it / make it more efficient)
-            - Clean up the project add better designs/ animations 
-            - Make it so that you can see who won after the game is over 
-            - Make it so that it draws a line on the winner 
-
-
-"""
-
-"""
 Side Notes:
     - The Number 0 Represents an Empty Square 
     - The Number 1 Represents a "X" Square 
