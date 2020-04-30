@@ -4,6 +4,11 @@ Goal: To Create Tic Tac Toe and implement the Minimax Algorithm with Alpha-Beta 
 Group: "Tic Tac Toe" 
 """
 
+"""
+Future Features: 
+                    - 
+"""
+
 import pygame
 import random
 
@@ -23,7 +28,7 @@ selectSound.set_volume(0.03)
 # Sound effect when selecting position
 insertSound = pygame.mixer.Sound('silencer.wav')
 insertSound.set_volume(0.01)
-
+ 
 """
 Side Notes:
     - The Number 0 Represents an Empty Square 
