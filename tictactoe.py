@@ -1,7 +1,7 @@
 """
 File: tictactoe.py
 Goal: To Create Tic Tac Toe and implement the Minimax Algorithm with Alpha-Beta Pruning 
-Developers: Jose Ceballos, Daniel Santana
+Group: "Tic Tac Toe" 
 """
 
 import pygame
