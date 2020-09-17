@@ -1,4 +1,4 @@
-# CS3520-Final-Project
+# Tic Tac Toe
 
 ### Goal: 
 To Create Tic Tac Toe Game and a Symbolic AI using the Min Max Algorithm with Alpha Beta Pruning
